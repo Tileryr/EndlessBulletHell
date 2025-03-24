@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://jmq13dxvbl88"]
+
+[ext_resource type="Script" uid="uid://bh0m6t13awhnx" path="res://scripts/enemies.gd" id="1_y16gg"]
+
+[node name="Enemies" type="Node"]
+script = ExtResource("1_y16gg")
+
+[node name="SpawnTimer" type="Timer" parent="."]
+wait_time = 5.0
+autostart = true

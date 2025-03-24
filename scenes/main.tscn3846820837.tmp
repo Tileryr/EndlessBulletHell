@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://chu3ex38mamnw"]
+
+[ext_resource type="PackedScene" uid="uid://c4o22dnw0xmdp" path="res://scenes/player.tscn" id="1_0wfyh"]
+[ext_resource type="Script" uid="uid://cnvg3b01itoch" path="res://scripts/particle_holder.gd" id="3_sugp2"]
+[ext_resource type="Script" uid="uid://d05dvdxpriue8" path="res://scripts/camera.gd" id="4_jyhfs"]
+[ext_resource type="PackedScene" uid="uid://jmq13dxvbl88" path="res://scenes/enemies.tscn" id="4_tbgi4"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Player" parent="." instance=ExtResource("1_0wfyh")]
+position = Vector2(306, 155)
+
+[node name="ParticleHolder" type="Node" parent="."]
+script = ExtResource("3_sugp2")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+anchor_mode = 0
+script = ExtResource("4_jyhfs")
+metadata/_edit_lock_ = true
+
+[node name="Enemies" parent="." instance=ExtResource("4_tbgi4")]

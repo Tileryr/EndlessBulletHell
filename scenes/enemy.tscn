@@ -1,0 +1,109 @@
+[gd_scene load_steps=15 format=3 uid="uid://domnibx5mmyl8"]
+
+[ext_resource type="Script" uid="uid://jgj2kis1wjll" path="res://scripts/System/Components/Visual/rotate_velocity.gd" id="2_8qclf"]
+[ext_resource type="Script" uid="uid://y36syull4tqv" path="res://scripts/System/Components/Core/hurtbox.gd" id="2_md0e3"]
+[ext_resource type="Script" uid="uid://c7p4p0d35552k" path="res://scripts/System/state_machine.gd" id="2_md484"]
+[ext_resource type="Script" uid="uid://coboq0tkyd6p1" path="res://scripts/System/Components/Core/hitbox.gd" id="3_4ra3w"]
+[ext_resource type="Script" uid="uid://5dqo88f8wa48" path="res://scripts/EnemyStates/enemy_chase.gd" id="3_ipns3"]
+[ext_resource type="Script" uid="uid://clxq2ovamv3q1" path="res://scripts/System/Components/Core/health.gd" id="4_5uy6h"]
+[ext_resource type="Script" uid="uid://cxverqaqqa18k" path="res://scripts/EnemyStates/knockback.gd" id="4_ipns3"]
+[ext_resource type="Script" uid="uid://bkddajenpu4gi" path="res://scripts/System/Components/CoreExtensions/hurt.gd" id="5_c4w8v"]
+[ext_resource type="Script" uid="uid://chcn1bhh6obui" path="res://scripts/System/Components/CoreExtensions/death.gd" id="6_xwavj"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7p1mj"]
+radius = 14.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5uy6h"]
+size = Vector2(37.2458, 38.0053)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8tegq"]
+
+[sub_resource type="Gradient" id="Gradient_md0e3"]
+offsets = PackedFloat32Array(1)
+colors = PackedColorArray(1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_4ra3w"]
+gradient = SubResource("Gradient_md0e3")
+width = 2
+height = 2
+
+[node name="Enemy" type="CharacterBody2D"]
+motion_mode = 1
+
+[node name="RotationMatchVelocity" type="Node" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("2_8qclf")
+target = NodePath("../Hitbox")
+metadata/_custom_type_script = "uid://jgj2kis1wjll"
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("default_state")]
+script = ExtResource("2_md484")
+default_state = NodePath("Chase")
+debug_label = true
+metadata/_custom_type_script = "uid://c7p4p0d35552k"
+
+[node name="Chase" type="Node" parent="StateMachine" node_paths=PackedStringArray("hurtbox", "hitbox")]
+script = ExtResource("3_ipns3")
+hurtbox = NodePath("../../Hurtbox")
+hitbox = NodePath("../../Hitbox")
+metadata/_custom_type_script = "uid://5dqo88f8wa48"
+
+[node name="Knockback" type="Node" parent="StateMachine" node_paths=PackedStringArray("move_state")]
+script = ExtResource("4_ipns3")
+move_state = NodePath("../Chase")
+metadata/_custom_type_script = "uid://cxverqaqqa18k"
+
+[node name="DeathComponent" type="Node" parent="." node_paths=PackedStringArray("hurt_component", "health_component", "particles")]
+script = ExtResource("6_xwavj")
+hurt_component = NodePath("../HurtComponent")
+health_component = NodePath("../HealthComponent")
+particles = NodePath("../Death")
+metadata/_custom_type_script = "uid://chcn1bhh6obui"
+
+[node name="HurtComponent" type="Node" parent="." node_paths=PackedStringArray("health_component", "collision")]
+script = ExtResource("5_c4w8v")
+health_component = NodePath("../HealthComponent")
+collision = NodePath("../Collision")
+metadata/_custom_type_script = "uid://bkddajenpu4gi"
+
+[node name="HealthComponent" type="Node" parent="." node_paths=PackedStringArray("hurt_box")]
+script = ExtResource("4_5uy6h")
+hurt_box = NodePath("../Hurtbox")
+metadata/_custom_type_script = "uid://clxq2ovamv3q1"
+
+[node name="Hurtbox" type="Area2D" parent="."]
+script = ExtResource("2_md0e3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("CircleShape2D_7p1mj")
+debug_color = Color(0.155706, 0.631707, 0.379092, 0.42)
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_mask = 2
+script = ExtResource("3_4ra3w")
+metadata/_custom_type_script = "uid://coboq0tkyd6p1"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("RectangleShape2D_5uy6h")
+debug_color = Color(0.997975, 0, 0.153572, 0.42)
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_8tegq")
+
+[node name="Death" type="CPUParticles2D" parent="."]
+emitting = false
+amount = 64
+texture = SubResource("GradientTexture2D_4ra3w")
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 151.97
+initial_velocity_max = 172.17
+damping_min = 26.263
+damping_max = 26.263
+
+[node name="AttackTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="area_entered" from="Hitbox" to="." method="_on_hitbox_area_entered"]

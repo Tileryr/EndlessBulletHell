@@ -1,0 +1,118 @@
+[gd_scene load_steps=19 format=3 uid="uid://c4o22dnw0xmdp"]
+
+[ext_resource type="Script" uid="uid://jgj2kis1wjll" path="res://scripts/System/Components/Visual/rotate_velocity.gd" id="2_3v2ag"]
+[ext_resource type="Script" uid="uid://chcn1bhh6obui" path="res://scripts/System/Components/CoreExtensions/death.gd" id="2_d2wvv"]
+[ext_resource type="Script" uid="uid://clxq2ovamv3q1" path="res://scripts/System/Components/Core/health.gd" id="2_smehm"]
+[ext_resource type="Script" uid="uid://bkddajenpu4gi" path="res://scripts/System/Components/CoreExtensions/hurt.gd" id="2_y4r1p"]
+[ext_resource type="Script" uid="uid://3m0527epocot" path="res://scripts/Player/States/player_idle.gd" id="3_qhqgy"]
+[ext_resource type="Script" uid="uid://c7p4p0d35552k" path="res://scripts/System/state_machine.gd" id="3_ur7pv"]
+[ext_resource type="Script" uid="uid://dh8bpeyq7yqky" path="res://scripts/Player/States/player_walk.gd" id="4_dqkch"]
+[ext_resource type="Script" uid="uid://btl5egnpd4c7l" path="res://scripts/Player/States/player_dash.gd" id="5_qlg0r"]
+[ext_resource type="Script" uid="uid://cvriks3w630ws" path="res://scripts/Player/States/player_attack.gd" id="6_fjrip"]
+[ext_resource type="Script" uid="uid://coboq0tkyd6p1" path="res://scripts/System/Components/Core/hitbox.gd" id="6_tuyoq"]
+[ext_resource type="Script" uid="uid://y36syull4tqv" path="res://scripts/System/Components/Core/hurtbox.gd" id="9_ur7pv"]
+[ext_resource type="Script" uid="uid://u0foy63q65bx" path="res://scripts/System/Components/CoreExtensions/attack.gd" id="12_3v2ag"]
+[ext_resource type="Script" uid="uid://bk8dh7i6hso2l" path="res://scripts/System/Components/MoveGenerators/move_curve.gd" id="12_jej6c"]
+[ext_resource type="Script" uid="uid://blg426toxbvrx" path="res://scripts/System/Components/MoveGenerators/move_mouse.gd" id="13_f1ej7"]
+
+[sub_resource type="Curve" id="Curve_fjrip"]
+_data = [Vector2(0, 1), 0.0, -2.77594, 0, 0, Vector2(1, 0), -1.05337, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_y4r1p"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g2els"]
+size = Vector2(16, 16)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fjrip"]
+radius = 5.0
+height = 44.0
+
+[node name="Player" type="CharacterBody2D" groups=["Player"]]
+motion_mode = 1
+
+[node name="RotationMatchVelocity" type="Node" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("2_3v2ag")
+target = NodePath("../Collision")
+metadata/_custom_type_script = "uid://jgj2kis1wjll"
+
+[node name="DeathComponent" type="Node" parent="." node_paths=PackedStringArray("hurt_component", "health_component")]
+script = ExtResource("2_d2wvv")
+hurt_component = NodePath("../HurtComponent")
+health_component = NodePath("../HealthComponent")
+metadata/_custom_type_script = "uid://chcn1bhh6obui"
+
+[node name="HurtComponent" type="Node" parent="." node_paths=PackedStringArray("health_component", "collision")]
+script = ExtResource("2_y4r1p")
+health_component = NodePath("../HealthComponent")
+collision = NodePath("../Collision")
+metadata/_custom_type_script = "uid://bkddajenpu4gi"
+
+[node name="HealthComponent" type="Node" parent="." node_paths=PackedStringArray("hurt_box")]
+script = ExtResource("2_smehm")
+max_health = 100
+hurt_box = NodePath("../Hurtbox")
+metadata/_custom_type_script = "uid://clxq2ovamv3q1"
+
+[node name="PlayerMachine" type="Node" parent="." node_paths=PackedStringArray("default_state")]
+script = ExtResource("3_ur7pv")
+default_state = NodePath("PlayerIdle")
+debug_label = true
+metadata/_custom_type_script = "uid://c7p4p0d35552k"
+
+[node name="PlayerIdle" type="Node" parent="PlayerMachine"]
+script = ExtResource("3_qhqgy")
+metadata/_custom_type_script = "uid://3m0527epocot"
+
+[node name="PlayerWalk" type="Node" parent="PlayerMachine"]
+script = ExtResource("4_dqkch")
+speed = 150.0
+metadata/_custom_type_script = "uid://dh8bpeyq7yqky"
+
+[node name="PlayerDash" type="Node" parent="PlayerMachine" node_paths=PackedStringArray("hurt_box", "collision")]
+script = ExtResource("5_qlg0r")
+hurt_box = NodePath("../../Hurtbox")
+collision = NodePath("../../Collision")
+metadata/_custom_type_script = "uid://btl5egnpd4c7l"
+
+[node name="PlayerAttack" type="Node" parent="PlayerMachine" node_paths=PackedStringArray("attack")]
+script = ExtResource("6_fjrip")
+attack = NodePath("../../Attack")
+move_curve = SubResource("Curve_fjrip")
+metadata/_custom_type_script = "uid://cvriks3w630ws"
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 2
+script = ExtResource("9_ur7pv")
+metadata/_custom_type_script = "uid://y36syull4tqv"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("RectangleShape2D_y4r1p")
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_g2els")
+debug_color = Color(0.982243, 0, 0.363935, 0.42)
+
+[node name="Attack" type="Node2D" parent="."]
+script = ExtResource("12_3v2ag")
+cooldown_time = 3.0
+metadata/_custom_type_script = "uid://u0foy63q65bx"
+
+[node name="MoveCurve" type="Node2D" parent="Attack"]
+script = ExtResource("12_jej6c")
+duration = 0.2
+velocity_curve = SubResource("Curve_fjrip")
+metadata/_custom_type_script = "uid://bk8dh7i6hso2l"
+
+[node name="MouseMove" type="Node2D" parent="Attack/MoveCurve"]
+script = ExtResource("13_f1ej7")
+metadata/_custom_type_script = "uid://blg426toxbvrx"
+
+[node name="Hitbox" type="Area2D" parent="Attack"]
+script = ExtResource("6_tuyoq")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Attack/Hitbox"]
+position = Vector2(27, 0)
+shape = SubResource("CapsuleShape2D_fjrip")
+debug_color = Color(0.104115, 0.630284, 0.437204, 0.42)
