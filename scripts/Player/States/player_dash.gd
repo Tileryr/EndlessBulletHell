@@ -5,6 +5,7 @@ var direction : Vector2
 var dash_speed := 600
 @export var hurt_box : Hurtbox
 @export var collision : CollisionShape2D
+@export var idle_state : State
 
 var player : CharacterBody2D : 
 	get():
@@ -24,7 +25,7 @@ func state_physics_process(delta: float) -> void:
 	player.velocity *= 0.95
 	player.move_and_slide()
 	if player.velocity.length() < 200:
-		change_state.emit(PlayerIdle)
+		change_state.emit(idle_state)
 
 func state_input(event: InputEvent) -> void:
 	pass

@@ -12,10 +12,7 @@ var label : Label
 func _ready() -> void:
 	for child_state in get_children() as Array[State]:
 		child_state.root = root
-		child_state.change_state.connect(func(new_state_class: Variant):
-			var new_state = get_state_by_class(new_state_class)
-			change_state(new_state)
-		)
+		child_state.change_state.connect(change_state)
 	
 	if debug_label:
 		label = Label.new()

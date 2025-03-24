@@ -2,7 +2,8 @@ class_name AttackState
 extends State
 
 @export var attack : Attack
-@export var move_curve : Curve
+@export var idle_state : State
+
 var move_distance := 500
 
 var time_passed : float
@@ -28,20 +29,14 @@ func state_exit() -> void:
 	pass
 
 func state_process(delta: float) -> void:
-	#time_passed += delta / attack_duration
-	#if time_passed > 1.0: change_state.emit(PlayerIdle)
-	#var progress : float = move_curve.sample(time_passed)
-	#var move_amount : Vector2 = progress * attack_dir * move_distance
-	#player.position = start_pos + move_amount
-	#player.velocity = move_curve.sample(time_passed) * attack_dir * move_distance
 	if attack.movement:
 		var new_move := attack.movement.generate_move(delta)
-		if new_move == MOVE_END: change_state.emit(PlayerIdle)
+		if new_move == MOVE_END: change_state.emit(idle_state)
 		player.velocity = new_move * 300
-
 		player.move_and_slide()
 	else:
-		change_state.emit(PlayerIdle)
+		change_state.emit(idle_state)
+
 func state_physics_process(delta: float) -> void:
 	pass
 

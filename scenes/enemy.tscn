@@ -1,13 +1,14 @@
-[gd_scene load_steps=15 format=3 uid="uid://domnibx5mmyl8"]
+[gd_scene load_steps=16 format=3 uid="uid://domnibx5mmyl8"]
 
 [ext_resource type="Script" uid="uid://jgj2kis1wjll" path="res://scripts/System/Components/Visual/rotate_velocity.gd" id="2_8qclf"]
 [ext_resource type="Script" uid="uid://y36syull4tqv" path="res://scripts/System/Components/Core/hurtbox.gd" id="2_md0e3"]
 [ext_resource type="Script" uid="uid://c7p4p0d35552k" path="res://scripts/System/state_machine.gd" id="2_md484"]
 [ext_resource type="Script" uid="uid://coboq0tkyd6p1" path="res://scripts/System/Components/Core/hitbox.gd" id="3_4ra3w"]
-[ext_resource type="Script" uid="uid://5dqo88f8wa48" path="res://scripts/EnemyStates/enemy_chase.gd" id="3_ipns3"]
 [ext_resource type="Script" uid="uid://clxq2ovamv3q1" path="res://scripts/System/Components/Core/health.gd" id="4_5uy6h"]
 [ext_resource type="Script" uid="uid://cxverqaqqa18k" path="res://scripts/EnemyStates/knockback.gd" id="4_ipns3"]
+[ext_resource type="Script" uid="uid://dh8bpeyq7yqky" path="res://scripts/Player/States/player_walk.gd" id="5_8qclf"]
 [ext_resource type="Script" uid="uid://bkddajenpu4gi" path="res://scripts/System/Components/CoreExtensions/hurt.gd" id="5_c4w8v"]
+[ext_resource type="Script" uid="uid://c5n3riu2dql26" path="res://scripts/System/Components/MoveGenerators/move_toPlayer.gd" id="6_w8i8w"]
 [ext_resource type="Script" uid="uid://chcn1bhh6obui" path="res://scripts/System/Components/CoreExtensions/death.gd" id="6_xwavj"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_7p1mj"]
@@ -37,20 +38,23 @@ metadata/_custom_type_script = "uid://jgj2kis1wjll"
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("default_state")]
 script = ExtResource("2_md484")
-default_state = NodePath("Chase")
+default_state = NodePath("MoveState")
 debug_label = true
 metadata/_custom_type_script = "uid://c7p4p0d35552k"
 
-[node name="Chase" type="Node" parent="StateMachine" node_paths=PackedStringArray("hurtbox", "hitbox")]
-script = ExtResource("3_ipns3")
-hurtbox = NodePath("../../Hurtbox")
-hitbox = NodePath("../../Hitbox")
-metadata/_custom_type_script = "uid://5dqo88f8wa48"
-
-[node name="Knockback" type="Node" parent="StateMachine" node_paths=PackedStringArray("move_state")]
+[node name="Knockback" type="Node" parent="StateMachine" node_paths=PackedStringArray("move_state", "hurtbox")]
 script = ExtResource("4_ipns3")
-move_state = NodePath("../Chase")
+move_state = NodePath("../MoveState")
+hurtbox = NodePath("../../Hurtbox")
 metadata/_custom_type_script = "uid://cxverqaqqa18k"
+
+[node name="MoveState" type="Node" parent="StateMachine" node_paths=PackedStringArray("move_generator", "hurt_state", "hurtbox")]
+script = ExtResource("5_8qclf")
+speed = 150.0
+move_generator = NodePath("../../ToPlayerMovement")
+hurt_state = NodePath("../Knockback")
+hurtbox = NodePath("../../Hurtbox")
+metadata/_custom_type_script = "uid://dh8bpeyq7yqky"
 
 [node name="DeathComponent" type="Node" parent="." node_paths=PackedStringArray("hurt_component", "health_component", "particles")]
 script = ExtResource("6_xwavj")
@@ -105,5 +109,9 @@ damping_max = 26.263
 
 [node name="AttackTimer" type="Timer" parent="."]
 one_shot = true
+
+[node name="ToPlayerMovement" type="Node2D" parent="."]
+script = ExtResource("6_w8i8w")
+metadata/_custom_type_script = "uid://c5n3riu2dql26"
 
 [connection signal="area_entered" from="Hitbox" to="." method="_on_hitbox_area_entered"]

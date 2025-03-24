@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://c4o22dnw0xmdp"]
+[gd_scene load_steps=21 format=3 uid="uid://c4o22dnw0xmdp"]
 
 [ext_resource type="Script" uid="uid://jgj2kis1wjll" path="res://scripts/System/Components/Visual/rotate_velocity.gd" id="2_3v2ag"]
 [ext_resource type="Script" uid="uid://chcn1bhh6obui" path="res://scripts/System/Components/CoreExtensions/death.gd" id="2_d2wvv"]
@@ -10,14 +10,12 @@
 [ext_resource type="Script" uid="uid://btl5egnpd4c7l" path="res://scripts/Player/States/player_dash.gd" id="5_qlg0r"]
 [ext_resource type="Script" uid="uid://cvriks3w630ws" path="res://scripts/Player/States/player_attack.gd" id="6_fjrip"]
 [ext_resource type="Script" uid="uid://coboq0tkyd6p1" path="res://scripts/System/Components/Core/hitbox.gd" id="6_tuyoq"]
+[ext_resource type="Script" uid="uid://cgsdr0dtguoxk" path="res://scripts/System/Components/MoveGenerators/move_input.gd" id="8_oprun"]
 [ext_resource type="Script" uid="uid://y36syull4tqv" path="res://scripts/System/Components/Core/hurtbox.gd" id="9_ur7pv"]
 [ext_resource type="Script" uid="uid://u0foy63q65bx" path="res://scripts/System/Components/CoreExtensions/attack.gd" id="12_3v2ag"]
 [ext_resource type="Script" uid="uid://bk8dh7i6hso2l" path="res://scripts/System/Components/MoveGenerators/move_curve.gd" id="12_jej6c"]
 [ext_resource type="Script" uid="uid://blg426toxbvrx" path="res://scripts/System/Components/MoveGenerators/move_mouse.gd" id="13_f1ej7"]
-
-[sub_resource type="Curve" id="Curve_fjrip"]
-_data = [Vector2(0, 1), 0.0, -2.77594, 0, 0, Vector2(1, 0), -1.05337, 0.0, 0, 0]
-point_count = 2
+[ext_resource type="Script" uid="uid://bu16wtbn8buvt" path="res://scripts/InputStates/RegularInput.gd" id="16_a8ls1"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_y4r1p"]
 size = Vector2(16, 16)
@@ -25,8 +23,12 @@ size = Vector2(16, 16)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g2els"]
 size = Vector2(16, 16)
 
+[sub_resource type="Curve" id="Curve_fjrip"]
+_data = [Vector2(0, 1), 0.0, -2.77594, 0, 0, Vector2(1, 0), -1.05337, 0.0, 0, 0]
+point_count = 2
+
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fjrip"]
-radius = 5.0
+radius = 13.0
 height = 44.0
 
 [node name="Player" type="CharacterBody2D" groups=["Player"]]
@@ -57,29 +59,38 @@ metadata/_custom_type_script = "uid://clxq2ovamv3q1"
 
 [node name="PlayerMachine" type="Node" parent="." node_paths=PackedStringArray("default_state")]
 script = ExtResource("3_ur7pv")
-default_state = NodePath("PlayerIdle")
+default_state = NodePath("Idle")
 debug_label = true
 metadata/_custom_type_script = "uid://c7p4p0d35552k"
 
-[node name="PlayerIdle" type="Node" parent="PlayerMachine"]
+[node name="Idle" type="Node" parent="PlayerMachine" node_paths=PackedStringArray("move_state", "input")]
 script = ExtResource("3_qhqgy")
+move_state = NodePath("../Walk")
+input = NodePath("../../PlayerInput")
 metadata/_custom_type_script = "uid://3m0527epocot"
 
-[node name="PlayerWalk" type="Node" parent="PlayerMachine"]
+[node name="Walk" type="Node" parent="PlayerMachine" node_paths=PackedStringArray("move_generator", "input")]
 script = ExtResource("4_dqkch")
 speed = 150.0
+move_generator = NodePath("InputMover")
+input = NodePath("../../PlayerInput")
 metadata/_custom_type_script = "uid://dh8bpeyq7yqky"
 
-[node name="PlayerDash" type="Node" parent="PlayerMachine" node_paths=PackedStringArray("hurt_box", "collision")]
+[node name="InputMover" type="Node2D" parent="PlayerMachine/Walk"]
+script = ExtResource("8_oprun")
+metadata/_custom_type_script = "uid://cgsdr0dtguoxk"
+
+[node name="Dash" type="Node" parent="PlayerMachine" node_paths=PackedStringArray("hurt_box", "collision", "idle_state")]
 script = ExtResource("5_qlg0r")
 hurt_box = NodePath("../../Hurtbox")
 collision = NodePath("../../Collision")
+idle_state = NodePath("../Idle")
 metadata/_custom_type_script = "uid://btl5egnpd4c7l"
 
-[node name="PlayerAttack" type="Node" parent="PlayerMachine" node_paths=PackedStringArray("attack")]
+[node name="Attack" type="Node" parent="PlayerMachine" node_paths=PackedStringArray("attack", "idle_state")]
 script = ExtResource("6_fjrip")
 attack = NodePath("../../Attack")
-move_curve = SubResource("Curve_fjrip")
+idle_state = NodePath("../Idle")
 metadata/_custom_type_script = "uid://cvriks3w630ws"
 
 [node name="Hurtbox" type="Area2D" parent="."]
@@ -113,6 +124,12 @@ metadata/_custom_type_script = "uid://blg426toxbvrx"
 script = ExtResource("6_tuyoq")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Attack/Hitbox"]
-position = Vector2(27, 0)
+position = Vector2(32, 0)
 shape = SubResource("CapsuleShape2D_fjrip")
 debug_color = Color(0.104115, 0.630284, 0.437204, 0.42)
+
+[node name="PlayerInput" type="Node" parent="." node_paths=PackedStringArray("dash_state", "attack_state")]
+script = ExtResource("16_a8ls1")
+dash_state = NodePath("../PlayerMachine/Dash")
+attack_state = NodePath("../PlayerMachine/Attack")
+metadata/_custom_type_script = "uid://bu16wtbn8buvt"
