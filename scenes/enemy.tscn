@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://domnibx5mmyl8"]
+[gd_scene load_steps=19 format=3 uid="uid://domnibx5mmyl8"]
 
 [ext_resource type="Script" uid="uid://jgj2kis1wjll" path="res://scripts/System/Components/Visual/rotate_velocity.gd" id="2_8qclf"]
 [ext_resource type="Script" uid="uid://y36syull4tqv" path="res://scripts/System/Components/Core/hurtbox.gd" id="2_md0e3"]
@@ -8,16 +8,11 @@
 [ext_resource type="Script" uid="uid://cxverqaqqa18k" path="res://scripts/EnemyStates/knockback.gd" id="4_ipns3"]
 [ext_resource type="Script" uid="uid://dh8bpeyq7yqky" path="res://scripts/Player/States/player_walk.gd" id="5_8qclf"]
 [ext_resource type="Script" uid="uid://bkddajenpu4gi" path="res://scripts/System/Components/CoreExtensions/hurt.gd" id="5_c4w8v"]
+[ext_resource type="Script" uid="uid://cvriks3w630ws" path="res://scripts/Player/States/player_attack.gd" id="5_w8i8w"]
+[ext_resource type="Script" uid="uid://dyu1n75t8joli" path="res://scripts/System/Components/StateSideEffects/StateChanges/can_attack.gd" id="5_wtq4b"]
 [ext_resource type="Script" uid="uid://c5n3riu2dql26" path="res://scripts/System/Components/MoveGenerators/move_toPlayer.gd" id="6_w8i8w"]
 [ext_resource type="Script" uid="uid://chcn1bhh6obui" path="res://scripts/System/Components/CoreExtensions/death.gd" id="6_xwavj"]
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_7p1mj"]
-radius = 14.0
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_5uy6h"]
-size = Vector2(37.2458, 38.0053)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_8tegq"]
+[ext_resource type="Script" uid="uid://u0foy63q65bx" path="res://scripts/System/Components/CoreExtensions/attack.gd" id="12_otmr2"]
 
 [sub_resource type="Gradient" id="Gradient_md0e3"]
 offsets = PackedFloat32Array(1)
@@ -28,27 +23,34 @@ gradient = SubResource("Gradient_md0e3")
 width = 2
 height = 2
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_7p1mj"]
+radius = 14.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8tegq"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5uy6h"]
+size = Vector2(37.2458, 38.0053)
+
 [node name="Enemy" type="CharacterBody2D"]
 motion_mode = 1
 
 [node name="RotationMatchVelocity" type="Node" parent="." node_paths=PackedStringArray("target")]
 script = ExtResource("2_8qclf")
-target = NodePath("../Hitbox")
+target = NodePath("../Attack/Hitbox")
 metadata/_custom_type_script = "uid://jgj2kis1wjll"
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("default_state")]
 script = ExtResource("2_md484")
-default_state = NodePath("MoveState")
-debug_label = true
+default_state = NodePath("Move")
 metadata/_custom_type_script = "uid://c7p4p0d35552k"
 
 [node name="Knockback" type="Node" parent="StateMachine" node_paths=PackedStringArray("move_state", "hurtbox")]
 script = ExtResource("4_ipns3")
-move_state = NodePath("../MoveState")
+move_state = NodePath("../Move")
 hurtbox = NodePath("../../Hurtbox")
 metadata/_custom_type_script = "uid://cxverqaqqa18k"
 
-[node name="MoveState" type="Node" parent="StateMachine" node_paths=PackedStringArray("move_generator", "hurt_state", "hurtbox")]
+[node name="Move" type="Node" parent="StateMachine" node_paths=PackedStringArray("move_generator", "hurt_state", "hurtbox")]
 script = ExtResource("5_8qclf")
 speed = 150.0
 move_generator = NodePath("../../ToPlayerMovement")
@@ -56,12 +58,38 @@ hurt_state = NodePath("../Knockback")
 hurtbox = NodePath("../../Hurtbox")
 metadata/_custom_type_script = "uid://dh8bpeyq7yqky"
 
+[node name="CanAttack" type="Node" parent="StateMachine/Move" node_paths=PackedStringArray("hitbox", "next_state")]
+script = ExtResource("5_wtq4b")
+hitbox = NodePath("../../../Attack/Hitbox")
+next_state = NodePath("../../Attack")
+metadata/_custom_type_script = "uid://dyu1n75t8joli"
+
+[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("attack", "next_state")]
+script = ExtResource("5_w8i8w")
+attack = NodePath("../../Attack")
+next_state = NodePath("../Move")
+metadata/_custom_type_script = "uid://cvriks3w630ws"
+
 [node name="DeathComponent" type="Node" parent="." node_paths=PackedStringArray("hurt_component", "health_component", "particles")]
 script = ExtResource("6_xwavj")
 hurt_component = NodePath("../HurtComponent")
 health_component = NodePath("../HealthComponent")
-particles = NodePath("../Death")
+particles = NodePath("Death")
 metadata/_custom_type_script = "uid://chcn1bhh6obui"
+
+[node name="Death" type="CPUParticles2D" parent="DeathComponent"]
+emitting = false
+amount = 64
+texture = SubResource("GradientTexture2D_4ra3w")
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 151.97
+initial_velocity_max = 172.17
+damping_min = 26.263
+damping_max = 26.263
 
 [node name="HurtComponent" type="Node" parent="." node_paths=PackedStringArray("health_component", "collision")]
 script = ExtResource("5_c4w8v")
@@ -81,37 +109,24 @@ script = ExtResource("2_md0e3")
 shape = SubResource("CircleShape2D_7p1mj")
 debug_color = Color(0.155706, 0.631707, 0.379092, 0.42)
 
-[node name="Hitbox" type="Area2D" parent="."]
-collision_mask = 2
-script = ExtResource("3_4ra3w")
-metadata/_custom_type_script = "uid://coboq0tkyd6p1"
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
-shape = SubResource("RectangleShape2D_5uy6h")
-debug_color = Color(0.997975, 0, 0.153572, 0.42)
-
 [node name="Collision" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_8tegq")
-
-[node name="Death" type="CPUParticles2D" parent="."]
-emitting = false
-amount = 64
-texture = SubResource("GradientTexture2D_4ra3w")
-lifetime = 0.4
-one_shot = true
-explosiveness = 1.0
-spread = 180.0
-gravity = Vector2(0, 0)
-initial_velocity_min = 151.97
-initial_velocity_max = 172.17
-damping_min = 26.263
-damping_max = 26.263
-
-[node name="AttackTimer" type="Timer" parent="."]
-one_shot = true
 
 [node name="ToPlayerMovement" type="Node2D" parent="."]
 script = ExtResource("6_w8i8w")
 metadata/_custom_type_script = "uid://c5n3riu2dql26"
 
-[connection signal="area_entered" from="Hitbox" to="." method="_on_hitbox_area_entered"]
+[node name="Attack" type="Node2D" parent="."]
+script = ExtResource("12_otmr2")
+cooldown_time = 5.0
+debug_label = true
+metadata/_custom_type_script = "uid://u0foy63q65bx"
+
+[node name="Hitbox" type="Area2D" parent="Attack"]
+collision_mask = 2
+script = ExtResource("3_4ra3w")
+metadata/_custom_type_script = "uid://coboq0tkyd6p1"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Attack/Hitbox"]
+shape = SubResource("RectangleShape2D_5uy6h")
+debug_color = Color(0.997975, 0, 0.153572, 0.42)

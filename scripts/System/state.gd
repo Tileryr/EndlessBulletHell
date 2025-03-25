@@ -3,6 +3,8 @@ extends Node
 
 var root : Node
 signal change_state(new_state: Variant)
+signal state_entered()
+signal state_exited()
 
 func state_enter() -> void:
 	pass

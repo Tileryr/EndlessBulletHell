@@ -2,7 +2,7 @@ class_name AttackState
 extends State
 
 @export var attack : Attack
-@export var idle_state : State
+@export var next_state : State
 
 var move_distance := 500
 
@@ -21,9 +21,14 @@ func state_enter() -> void:
 	time_passed = 0
 	start_pos = player.position
 	attack_dir = player.position.direction_to(player.get_global_mouse_position())
-	attack.activate()
+	
 	if attack.movement:
 		attack.movement.initialize()
+		
+	var success : bool = await attack.activate()
+	if !success: change_state.emit(next_state)
+	
+	
 
 func state_exit() -> void:
 	pass
@@ -31,11 +36,11 @@ func state_exit() -> void:
 func state_process(delta: float) -> void:
 	if attack.movement:
 		var new_move := attack.movement.generate_move(delta)
-		if new_move == MOVE_END: change_state.emit(idle_state)
+		if new_move == MOVE_END: change_state.emit(next_state)
 		player.velocity = new_move * 300
 		player.move_and_slide()
 	else:
-		change_state.emit(idle_state)
+		change_state.emit(next_state)
 
 func state_physics_process(delta: float) -> void:
 	pass

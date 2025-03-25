@@ -8,5 +8,4 @@ signal hurt(source: Hitbox)
 func _ready() -> void:
 	hurt.connect(func(source: Hitbox):
 		last_attacker = source
-		print("last attacker" + str(last_attacker))
 	)

@@ -22,9 +22,7 @@ func _ready() -> void:
 func state_enter() -> void:
 	direction = last_attacker.global_position.direction_to(controller.position)
 	controller.velocity = sensitivity*direction
-	
-	
-	print(controller.velocity)
+
 func state_process(_delta: float) -> void:
 	var target_dir = move_state.move_generator.generate_move(_delta)
 	controller.velocity = controller.velocity.move_toward(target_dir*speed, return_speed)

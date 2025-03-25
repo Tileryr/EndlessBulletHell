@@ -8,11 +8,12 @@ extends State
 @export var hurt_state : State
 @export var hurtbox : Hurtbox
 
-@export var idle_state : State
+@export var finished_state : State
 @export var input : InputState
 
-var acceleration := 0.2
-var friction := 0.4
+@export_group("Acceleration")
+@export var accelerate : bool = false
+@export var acceleration := 1.0
 
 var player : CharacterBody2D : 
 	get():
@@ -25,19 +26,15 @@ func state_enter() -> void:
 			change_state.emit(hurt_state)
 		)
 
-func state_exit() -> void:
-	player.velocity = Vector2.ZERO
-
 func state_process(delta: float) -> void:
 	var move_vector := move_generator.generate_move(delta)
-	if move_vector == Vector2.ZERO:
-		player.velocity -= player.velocity * friction
-		
-		if player.velocity.length() < 1 and idle_state:
-			change_state.emit(idle_state)
+	if move_vector == Vector2.ZERO and finished_state:
+		change_state.emit(finished_state)
 	else:
-		player.velocity += move_vector*speed*acceleration
-		player.velocity = player.velocity.limit_length(speed)
+		if accelerate:
+			player.velocity = player.velocity.move_toward(move_vector*speed, acceleration)
+		else:
+			player.velocity = move_vector*speed
 		
 	player.move_and_slide()
 

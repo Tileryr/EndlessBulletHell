@@ -41,11 +41,13 @@ func change_state(new_state: State) -> void:
 
 	if current_state:
 		current_state.state_exit()
+		current_state.state_exited.emit()
 	
 	current_state = new_state
 	
 	if current_state:
 		current_state.state_enter()
+		current_state.state_entered.emit()
 
 func get_state_by_class(state_class: Variant) -> State:
 	for child_state in get_children() as Array[State]:

@@ -6,7 +6,16 @@ extends Node2D
 
 var hitbox : Hitbox
 var movement : MovementGenerator
+
 var timer : Timer
+var timer_label : Label
+
+@export var debug_label : bool :
+	set(value):
+		debug_label = value
+		if debug_label:
+			timer_label = Label.new()
+			add_child(timer_label)
 
 func _ready() -> void:
 	for child in get_children():
@@ -23,15 +32,19 @@ func _ready() -> void:
 		timer.wait_time = cooldown_time
 		add_child(timer)
 		timer.start()
-
+		
+func _process(delta: float) -> void:
+	if debug_label: timer_label.text = str(timer.time_left).substr(0, 3)
+	
 func activate() -> bool:
+	if !timer.is_stopped(): 
+		return false
+		
+	timer.start()
 	var attack_dir := controller.position.direction_to(controller.get_global_mouse_position())
 	hitbox.rotation = attack_dir.angle()
 	
 	for hurtbox in await hitbox.trigger():
 		hurtbox.hurt.emit(hitbox)
-	
-	if timer:
-		return timer.is_stopped()
-	else:
-		return true
+		
+	return true
