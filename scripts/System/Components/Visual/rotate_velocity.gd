@@ -1,8 +1,8 @@
-class_name RotationMatchVelocity
+class_name RotateToVelocity
 extends Node
 
-@export var target : Node2D
-@onready var controller : CharacterBody2D = get_parent()
+@onready var target : Node2D = get_parent()
+@export var controller : CharacterBody2D
 
 func _process(delta: float) -> void:
 	target.rotation = controller.velocity.angle()

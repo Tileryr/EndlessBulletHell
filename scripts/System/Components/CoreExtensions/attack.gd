@@ -31,18 +31,19 @@ func _ready() -> void:
 		timer.one_shot = true
 		timer.wait_time = cooldown_time
 		add_child(timer)
-		timer.start()
+		#timer.start()
 		
 func _process(delta: float) -> void:
 	if debug_label: timer_label.text = str(timer.time_left).substr(0, 3)
 	
 func activate() -> bool:
-	if !timer.is_stopped(): 
-		return false
-		
-	timer.start()
-	var attack_dir := controller.position.direction_to(controller.get_global_mouse_position())
-	hitbox.rotation = attack_dir.angle()
+	if timer:
+		if !timer.is_stopped(): 
+			return false
+			
+		timer.start()
+	#var attack_dir := controller.position.direction_to(controller.get_global_mouse_position())
+	#hitbox.rotation = attack_dir.angle()
 	
 	for hurtbox in await hitbox.trigger():
 		hurtbox.hurt.emit(hitbox)

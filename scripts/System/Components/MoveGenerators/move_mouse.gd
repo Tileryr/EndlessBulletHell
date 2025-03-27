@@ -7,4 +7,4 @@ func initialize() -> void:
 	mouse_dir = global_position.direction_to(get_global_mouse_position()) 
 	
 func generate_move(_delta: float) -> Vector2:
-	return mouse_dir
+	return global_position.direction_to(get_global_mouse_position()) 

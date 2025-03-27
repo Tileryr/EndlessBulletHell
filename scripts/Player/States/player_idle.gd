@@ -1,4 +1,4 @@
-class_name PlayerIdle
+class_name IdleState
 extends State
 
 @export var move_state : State
@@ -24,6 +24,7 @@ func state_physics_process(delta: float) -> void:
 	pass
 
 func state_input(event: InputEvent) -> void:
+	if !input: return
 	var state_input : State = input.state_input(event)
 	if state_input:
 		change_state.emit(state_input)

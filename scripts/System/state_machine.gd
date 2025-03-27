@@ -21,8 +21,6 @@ func _ready() -> void:
 		
 	change_state(default_state)
 	
-	
-		
 func _process(delta: float) -> void:
 	if current_state:
 		current_state.state_process(delta)

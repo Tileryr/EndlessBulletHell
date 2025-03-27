@@ -1,0 +1,173 @@
+[gd_scene load_steps=24 format=3 uid="uid://bh4u5xkkqxpwv"]
+
+[ext_resource type="Script" uid="uid://bk8dh7i6hso2l" path="res://scripts/System/Components/MoveGenerators/move_curve.gd" id="1_1lupt"]
+[ext_resource type="Script" uid="uid://c7p4p0d35552k" path="res://scripts/System/state_machine.gd" id="1_4uo5j"]
+[ext_resource type="Script" uid="uid://c1s6ha65xx38g" path="res://scripts/System/Components/MoveGenerators/move_first.gd" id="1_egbkd"]
+[ext_resource type="Script" uid="uid://dh8bpeyq7yqky" path="res://scripts/Player/States/player_walk.gd" id="2_546em"]
+[ext_resource type="Script" uid="uid://c5n3riu2dql26" path="res://scripts/System/Components/MoveGenerators/move_toPlayer.gd" id="3_546em"]
+[ext_resource type="Script" uid="uid://cvriks3w630ws" path="res://scripts/Player/States/player_attack.gd" id="3_nd7f0"]
+[ext_resource type="Script" uid="uid://dcars7cr5gpfo" path="res://scripts/System/Components/MoveGenerators/move_toward.gd" id="4_431pn"]
+[ext_resource type="Script" uid="uid://u0foy63q65bx" path="res://scripts/System/Components/CoreExtensions/attack.gd" id="5_c7byg"]
+[ext_resource type="Script" uid="uid://de5p2x40g08s6" path="res://scripts/System/Components/MoveGenerators/move_opposite.gd" id="5_i1atr"]
+[ext_resource type="Script" uid="uid://c8ukeui8vxg06" path="res://scripts/System/Components/StateSideEffects/StateChanges/on_collide.gd" id="6_4b3yk"]
+[ext_resource type="Script" uid="uid://coboq0tkyd6p1" path="res://scripts/System/Components/Core/hitbox.gd" id="6_egbkd"]
+[ext_resource type="Script" uid="uid://doi0hpljw6hf0" path="res://scripts/System/Components/StateSideEffects/StateChanges/on_hurt.gd" id="9_ki800"]
+[ext_resource type="Script" uid="uid://jgj2kis1wjll" path="res://scripts/System/Components/Visual/rotate_velocity.gd" id="10_431pn"]
+[ext_resource type="Script" uid="uid://clxq2ovamv3q1" path="res://scripts/System/Components/Core/health.gd" id="13_37p4w"]
+[ext_resource type="Script" uid="uid://bkddajenpu4gi" path="res://scripts/System/Components/CoreExtensions/hurt.gd" id="14_r8spo"]
+[ext_resource type="Script" uid="uid://y36syull4tqv" path="res://scripts/System/Components/Core/hurtbox.gd" id="14_uf7b4"]
+[ext_resource type="Script" uid="uid://chcn1bhh6obui" path="res://scripts/System/Components/CoreExtensions/death.gd" id="15_ki800"]
+
+[sub_resource type="Curve" id="Curve_quw1g"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 2.9573, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_nd7f0"]
+radius = 17.0294
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_i1atr"]
+radius = 29.0172
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_r8spo"]
+size = Vector2(58, 58)
+
+[sub_resource type="Gradient" id="Gradient_md0e3"]
+offsets = PackedFloat32Array(1)
+colors = PackedColorArray(1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_r8spo"]
+gradient = SubResource("Gradient_md0e3")
+width = 2
+height = 2
+
+[node name="Roller" type="CharacterBody2D"]
+
+[node name="CurveVelocity" type="Node2D" parent="."]
+script = ExtResource("1_1lupt")
+stop = false
+duration = 1.0
+velocity_curve = SubResource("Curve_quw1g")
+metadata/_custom_type_script = "uid://bk8dh7i6hso2l"
+
+[node name="ReturnFirstMove" type="Node2D" parent="CurveVelocity"]
+script = ExtResource("1_egbkd")
+metadata/_custom_type_script = "uid://c1s6ha65xx38g"
+
+[node name="ToPlayer" type="Node2D" parent="CurveVelocity/ReturnFirstMove"]
+script = ExtResource("3_546em")
+metadata/_custom_type_script = "uid://c5n3riu2dql26"
+
+[node name="KnockBack" type="Node2D" parent="." node_paths=PackedStringArray("start_move_gen")]
+script = ExtResource("4_431pn")
+start_move_gen = NodePath("ReverseMovement")
+change_speed = 0.04
+metadata/_custom_type_script = "uid://dcars7cr5gpfo"
+
+[node name="ReverseMovement" type="Node2D" parent="KnockBack" node_paths=PackedStringArray("movement_generator")]
+script = ExtResource("5_i1atr")
+movement_generator = NodePath("../../CurveVelocity")
+metadata/_custom_type_script = "uid://de5p2x40g08s6"
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_nd7f0")
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("default_state")]
+script = ExtResource("1_4uo5j")
+default_state = NodePath("Roll")
+debug_label = true
+metadata/_custom_type_script = "uid://c7p4p0d35552k"
+
+[node name="Roll" type="Node" parent="StateMachine" node_paths=PackedStringArray("move_generator")]
+script = ExtResource("2_546em")
+speed = 300.0
+move_generator = NodePath("../../CurveVelocity")
+metadata/_custom_type_script = "uid://dh8bpeyq7yqky"
+
+[node name="OnCollide" type="Node" parent="StateMachine/Roll" node_paths=PackedStringArray("ray_cast", "next_state")]
+script = ExtResource("6_4b3yk")
+ray_cast = NodePath("../../../RayCast2D")
+next_state = NodePath("../../Attack")
+unbind_count = 0
+metadata/_custom_type_script = "uid://c8ukeui8vxg06"
+
+[node name="OnHurt" type="Node" parent="StateMachine/Roll" node_paths=PackedStringArray("hurtbox", "next_state")]
+script = ExtResource("9_ki800")
+hurtbox = NodePath("../../../Hurtbox")
+next_state = NodePath("../../Knockback")
+metadata/_custom_type_script = "uid://doi0hpljw6hf0"
+
+[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("attack", "next_state")]
+script = ExtResource("3_nd7f0")
+attack = NodePath("../../Hit")
+next_state = NodePath("../Knockback")
+metadata/_custom_type_script = "uid://cvriks3w630ws"
+
+[node name="Knockback" type="Node" parent="StateMachine" node_paths=PackedStringArray("move_generator", "finished_state")]
+script = ExtResource("2_546em")
+speed = 200.0
+move_generator = NodePath("../../KnockBack")
+finished_state = NodePath("../Roll")
+metadata/_custom_type_script = "uid://dh8bpeyq7yqky"
+
+[node name="Hit" type="Node2D" parent="."]
+script = ExtResource("5_c7byg")
+metadata/_custom_type_script = "uid://u0foy63q65bx"
+
+[node name="Hitbox" type="Area2D" parent="Hit"]
+collision_mask = 2
+script = ExtResource("6_egbkd")
+metadata/_custom_type_script = "uid://coboq0tkyd6p1"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hit/Hitbox"]
+shape = SubResource("CircleShape2D_i1atr")
+debug_color = Color(0.930156, 0.224969, 0.360381, 0.42)
+
+[node name="RayCast2D" type="RayCast2D" parent="."]
+target_position = Vector2(30, 0)
+
+[node name="RotateToVelocity" type="Node" parent="RayCast2D" node_paths=PackedStringArray("controller")]
+script = ExtResource("10_431pn")
+controller = NodePath("../..")
+metadata/_custom_type_script = "uid://jgj2kis1wjll"
+
+[node name="HealthComponent" type="Node" parent="." node_paths=PackedStringArray("hurt_box")]
+script = ExtResource("13_37p4w")
+max_health = 5
+hurt_box = NodePath("../Hurtbox")
+metadata/_custom_type_script = "uid://clxq2ovamv3q1"
+
+[node name="HurtComponent" type="Node" parent="HealthComponent" node_paths=PackedStringArray("health_component", "collision")]
+script = ExtResource("14_r8spo")
+health_component = NodePath("..")
+collision = NodePath("../../Collision")
+metadata/_custom_type_script = "uid://bkddajenpu4gi"
+
+[node name="DeathComponent" type="Node" parent="HealthComponent" node_paths=PackedStringArray("hurt_component", "health_component", "kill_target", "particles")]
+script = ExtResource("15_ki800")
+hurt_component = NodePath("../HurtComponent")
+health_component = NodePath("..")
+kill_target = NodePath("../..")
+particles = NodePath("../../Death")
+metadata/_custom_type_script = "uid://chcn1bhh6obui"
+
+[node name="Hurtbox" type="Area2D" parent="."]
+script = ExtResource("14_uf7b4")
+metadata/_custom_type_script = "uid://y36syull4tqv"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("RectangleShape2D_r8spo")
+
+[node name="Death" type="CPUParticles2D" parent="."]
+emitting = false
+amount = 64
+texture = SubResource("GradientTexture2D_r8spo")
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+randomness = 0.2
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 151.97
+initial_velocity_max = 172.17
+damping_min = 26.263
+damping_max = 26.263

@@ -1,12 +1,19 @@
 extends Node
 
-const enemy_scene := preload("uid://domnibx5mmyl8") 
+const roller := preload("uid://bh4u5xkkqxpwv") 
+const chaser := preload("uid://domnibx5mmyl8")
+
+const enemy_scenes : Array[PackedScene] = [
+	roller,
+	chaser
+]
 
 @onready var spawn_timer: Timer = $SpawnTimer
 
 func _ready() -> void:
 	spawn_timer.timeout.connect(func():
-		var new_enemy : CharacterBody2D = enemy_scene.instantiate()
+		var random_scene : PackedScene = enemy_scenes.pick_random()
+		var new_enemy : CharacterBody2D = random_scene.instantiate()
 		new_enemy.position = random_screen_point()
 		add_child(new_enemy)
 	)

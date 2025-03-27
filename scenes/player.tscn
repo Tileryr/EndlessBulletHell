@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://c4o22dnw0xmdp"]
+[gd_scene load_steps=26 format=3 uid="uid://c4o22dnw0xmdp"]
 
 [ext_resource type="Script" uid="uid://jgj2kis1wjll" path="res://scripts/System/Components/Visual/rotate_velocity.gd" id="2_3v2ag"]
 [ext_resource type="Script" uid="uid://chcn1bhh6obui" path="res://scripts/System/Components/CoreExtensions/death.gd" id="2_d2wvv"]
@@ -18,6 +18,7 @@
 [ext_resource type="Script" uid="uid://blg426toxbvrx" path="res://scripts/System/Components/MoveGenerators/move_mouse.gd" id="13_f1ej7"]
 [ext_resource type="Script" uid="uid://bu16wtbn8buvt" path="res://scripts/InputStates/RegularInput.gd" id="16_a8ls1"]
 [ext_resource type="Script" uid="uid://dln3ki3d4a6xk" path="res://scripts/System/Components/MoveGenerators/move_scale.gd" id="17_qfm1y"]
+[ext_resource type="Script" uid="uid://c8myq7aldkyd2" path="res://scripts/System/Components/Visual/rotate_to_mouse.gd" id="18_4r5pv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_y4r1p"]
 size = Vector2(16, 16)
@@ -33,31 +34,37 @@ point_count = 2
 radius = 13.0
 height = 44.0
 
+[sub_resource type="Gradient" id="Gradient_fulsm"]
+offsets = PackedFloat32Array(1)
+colors = PackedColorArray(1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_4r5pv"]
+gradient = SubResource("Gradient_fulsm")
+width = 16
+height = 16
+fill_to = Vector2(1, 1)
+
 [node name="Player" type="CharacterBody2D" groups=["Player"]]
 motion_mode = 1
 
-[node name="RotationMatchVelocity" type="Node" parent="." node_paths=PackedStringArray("target")]
-script = ExtResource("2_3v2ag")
-target = NodePath("../Collision")
-metadata/_custom_type_script = "uid://jgj2kis1wjll"
-
-[node name="DeathComponent" type="Node" parent="." node_paths=PackedStringArray("hurt_component", "health_component")]
-script = ExtResource("2_d2wvv")
-hurt_component = NodePath("../HurtComponent")
-health_component = NodePath("../HealthComponent")
-metadata/_custom_type_script = "uid://chcn1bhh6obui"
-
-[node name="HurtComponent" type="Node" parent="." node_paths=PackedStringArray("health_component", "collision")]
-script = ExtResource("2_y4r1p")
-health_component = NodePath("../HealthComponent")
-collision = NodePath("../Collision")
-metadata/_custom_type_script = "uid://bkddajenpu4gi"
-
 [node name="HealthComponent" type="Node" parent="." node_paths=PackedStringArray("hurt_box")]
 script = ExtResource("2_smehm")
-max_health = 100
+max_health = 10
 hurt_box = NodePath("../Hurtbox")
 metadata/_custom_type_script = "uid://clxq2ovamv3q1"
+
+[node name="DeathComponent" type="Node" parent="HealthComponent" node_paths=PackedStringArray("hurt_component", "health_component", "kill_target")]
+script = ExtResource("2_d2wvv")
+hurt_component = NodePath("../HurtComponent")
+health_component = NodePath("..")
+kill_target = NodePath("../..")
+metadata/_custom_type_script = "uid://chcn1bhh6obui"
+
+[node name="HurtComponent" type="Node" parent="HealthComponent" node_paths=PackedStringArray("health_component", "collision")]
+script = ExtResource("2_y4r1p")
+health_component = NodePath("..")
+collision = NodePath("../../Collision")
+metadata/_custom_type_script = "uid://bkddajenpu4gi"
 
 [node name="PlayerMachine" type="Node" parent="." node_paths=PackedStringArray("default_state")]
 script = ExtResource("3_ur7pv")
@@ -117,6 +124,7 @@ metadata/_custom_type_script = "uid://bu16wtbn8buvt"
 collision_layer = 2
 script = ExtResource("9_ur7pv")
 metadata/_custom_type_script = "uid://y36syull4tqv"
+metadata/_edit_lock_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 shape = SubResource("RectangleShape2D_y4r1p")
@@ -124,6 +132,11 @@ shape = SubResource("RectangleShape2D_y4r1p")
 [node name="Collision" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_g2els")
 debug_color = Color(0.982243, 0, 0.363935, 0.42)
+
+[node name="RotateToVelocity" type="Node" parent="Collision" node_paths=PackedStringArray("controller")]
+script = ExtResource("2_3v2ag")
+controller = NodePath("../..")
+metadata/_custom_type_script = "uid://jgj2kis1wjll"
 
 [node name="Attack" type="Node2D" parent="."]
 script = ExtResource("12_3v2ag")
@@ -149,6 +162,11 @@ position = Vector2(32, 0)
 shape = SubResource("CapsuleShape2D_fjrip")
 debug_color = Color(0.104115, 0.630284, 0.437204, 0.42)
 
+[node name="RotateToMouse" type="Node2D" parent="Attack" node_paths=PackedStringArray("target")]
+script = ExtResource("18_4r5pv")
+target = NodePath("../Hitbox")
+metadata/_custom_type_script = "uid://c8myq7aldkyd2"
+
 [node name="Dash" type="Node2D" parent="."]
 script = ExtResource("17_qfm1y")
 cutoff = 0.3
@@ -157,3 +175,6 @@ metadata/_custom_type_script = "uid://dln3ki3d4a6xk"
 [node name="ToMouse" type="Node2D" parent="Dash"]
 script = ExtResource("13_f1ej7")
 metadata/_custom_type_script = "uid://blg426toxbvrx"
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_4r5pv")
